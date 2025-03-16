@@ -17,3 +17,8 @@
 * prefer real objects and vcr cassettes over mocks, mocks are considered harmful
 * when manually testing together in the dev environment, give the test plan first, then run the command that will run, then check the console logs for information
 * when using `test/vcr_cassettes` rm the cassette before run if we're debugging a test or it will lock in the wrong value
+* use proper data types in tests (e.g., bigint for IDs) to match database schema
+* test both success and error cases for external API interactions
+* organize VCR cassettes by service and functionality (e.g., openrouter/chat_completion_basic.yml)
+* prefer comprehensive assertions over minimal ones
+* ensure test coverage for all error handling paths

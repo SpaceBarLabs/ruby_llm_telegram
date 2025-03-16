@@ -19,6 +19,7 @@ Currently in development. Core features being implemented:
 - [x] OpenRouter integration
 - [x] Telegram Bot implementation
 - [x] Standardized bot entry points
+- [x] Comprehensive test coverage
 - [ ] Conversation handling
 - [ ] User management
 
@@ -59,6 +60,7 @@ Currently in development. Core features being implemented:
 4. Add the token to your Rails credentials:
    ```yaml
    telegram_bot_token: your_bot_token_here
+   telegram_main_channel_id: your_channel_id_here  # Optional: for startup messages
    ```
 
 ## Development
@@ -103,9 +105,36 @@ DATABASE_URL=postgresql://localhost/ruby_llm_telegram_development
 
 ### Testing
 
+The project uses Minitest for testing and VCR for recording HTTP interactions. This ensures tests are reliable and don't make actual API calls during test runs.
+
 Run the test suite:
 ```bash
 rails test
+```
+
+#### VCR Cassettes
+
+The project uses VCR to record and replay HTTP interactions in tests. Cassettes are stored in `test/vcr_cassettes/`. When debugging API-related tests, you might want to delete the relevant cassette to record new interactions:
+
+```bash
+# Remove specific cassette
+rm test/vcr_cassettes/openrouter/specific_cassette.yml
+
+# Remove all OpenRouter cassettes
+rm test/vcr_cassettes/openrouter/*
+```
+
+#### Test Environment Credentials
+
+For testing OpenRouter API interactions, you'll need to set up test credentials:
+
+```bash
+rails credentials:edit --environment test
+```
+
+Add the following to your test credentials:
+```yaml
+openrouter_api_key: your_test_api_key_here
 ```
 
 ## Contributing

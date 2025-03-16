@@ -23,16 +23,36 @@
 
 * use a code block in telegram to print debug
 
+* improve test coverage and reliability
+  * set up VCR for OpenRouter API tests
+  * fix Conversation model tests
+  * add comprehensive test coverage for message history
+  * configure proper test environment
+
 # next
 
-* send a startup message to the main channel on every start - list open router model and other useful information - this is implemented and failing
-
+* send a startup message to the main channel on every start
+  * list open router model and other useful information
+  * implement proper error handling for startup message
 
 # soon
 
 * implement conversation history tracking
+  * add conversation pruning for long histories
+  * implement conversation context management
+  * add conversation persistence tests
+
 * add error handling and logging
+  * implement structured logging
+  * add error monitoring
+  * improve error recovery strategies
+
 * implement user management
+  * user authentication
+  * user preferences
+  * rate limiting per user
+
 * add rate limiting and usage tracking
-* chat history is going to start to get too long, we need to handle that
-* can we queue log results in our tests only display on failure? - probably not needed, assertions do this
+  * implement token counting
+  * add usage quotas
+  * track costs per user/conversation
