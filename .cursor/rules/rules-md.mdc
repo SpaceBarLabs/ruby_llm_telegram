@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Use RULES.md
+
+- Use [RULES.md](mdc:RULES.md)
