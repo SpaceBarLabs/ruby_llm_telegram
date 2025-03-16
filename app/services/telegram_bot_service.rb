@@ -11,6 +11,9 @@ class TelegramBotService
     Rails.logger.info("Starting Telegram bot...")
     Telegram::Bot::Client.run(@token) do |bot|
       Rails.logger.info("Bot connected successfully. Listening for messages...")
+      @bot_info = bot.api.get_me
+      Rails.logger.info("Bot username: @#{@bot_info.username}")
+
       bot.listen do |message|
         case message
         when Telegram::Bot::Types::Message
@@ -33,12 +36,27 @@ class TelegramBotService
   def handle_message(bot, message)
     return unless message.text
 
+    # Check if the message is a reply to the bot's message
+    is_reply_to_bot = message.reply_to_message&.from&.id == @bot_info.id
+    # Check if the message mentions the bot using @username
+    mentions_bot = message.text.include?("@#{@bot_info.username}")
+    # Check if the message contains entities that mention the bot
+    has_bot_mention = message.entities&.any? { |entity|
+      entity.type == "mention" && message.text[entity.offset, entity.length] == "@#{@bot_info.username}"
+    }
+
+    # Only proceed if the message is directed at the bot
+    return unless is_reply_to_bot || mentions_bot || has_bot_mention
+
     Rails.logger.info("Received message from user #{message.from.id} (#{message.from.username}): #{message.text}")
+
+    # Remove the bot mention from the message text if it exists
+    user_message = message.text.gsub("@#{@bot_info.username}", "").strip
 
     Rails.logger.info("Sending request to OpenRouter...")
     chat_response = @open_router.chat_completion([
       { role: "system", content: "You are a helpful assistant." },
-      { role: "user", content: message.text }
+      { role: "user", content: user_message }
     ])
 
     if chat_response && chat_response["choices"]
@@ -48,14 +66,16 @@ class TelegramBotService
 
       bot.api.send_message(
         chat_id: message.chat.id,
-        text: response_text
+        text: response_text,
+        reply_to_message_id: message.message_id
       )
       Rails.logger.info("Reply sent successfully")
     else
       Rails.logger.warn("OpenRouter returned invalid response: #{chat_response.inspect}")
       bot.api.send_message(
         chat_id: message.chat.id,
-        text: "I'm sorry, I couldn't process that request."
+        text: "I'm sorry, I couldn't process that request.",
+        reply_to_message_id: message.message_id
       )
     end
   rescue StandardError => e
@@ -65,7 +85,8 @@ class TelegramBotService
 
     bot.api.send_message(
       chat_id: message.chat.id,
-      text: "An error occurred while processing your message."
+      text: "An error occurred while processing your message.",
+      reply_to_message_id: message.message_id
     )
   end
 
