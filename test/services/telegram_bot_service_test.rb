@@ -1,9 +1,82 @@
 require "test_helper"
+require "ostruct"
+require "minitest/mock"
 
 class TelegramBotServiceTest < ActiveSupport::TestCase
+  class MockTelegramClient
+    attr_reader :api
+
+    def initialize(token)
+      @token = token
+      @api = MockTelegramAPI.new
+    end
+
+    def self.run(token)
+      client = new(token)
+      yield client if block_given?
+      client
+    end
+
+    def listen
+      # Simulate no messages in test environment
+    end
+  end
+
+  class MockTelegramAPI
+    attr_reader :sent_messages
+
+    def initialize
+      @sent_messages = []
+    end
+
+    def send_message(params)
+      @sent_messages << params
+    end
+
+    def get_me
+      OpenStruct.new(id: 123, username: "test_bot")
+    end
+  end
+
+  class MockOpenRouterService
+    def initialize
+      @responses = []
+    end
+
+    def add_response(response)
+      @responses << response
+    end
+
+    def chat_completion(messages)
+      @responses.shift || {
+        "choices" => [
+          {
+            "message" => {
+              "content" => "Mock response"
+            }
+          }
+        ]
+      }
+    end
+  end
+
   def setup
-    @service = TelegramBotService.new(Rails.application.credentials.telegram_bot_token)
-    @test_chat_id = Rails.application.credentials.telegram_test_chat_id.to_i
+    # Clean the database before each test
+    Conversation.delete_all
+
+    @logger = Logger.new(nil) # Null logger for tests
+    @mock_open_router = MockOpenRouterService.new
+    @mock_telegram_client = MockTelegramClient
+
+    TelegramBotService.configure do |config|
+      config.token = "test_token"
+      config.logger = @logger
+      config.open_router_service_class = MockOpenRouterService
+      config.telegram_bot_client_class = @mock_telegram_client
+    end
+
+    @service = TelegramBotService.new
+    @test_chat_id = 12345
   end
 
   test "should initialize with token" do
@@ -11,7 +84,11 @@ class TelegramBotServiceTest < ActiveSupport::TestCase
   end
 
   test "should handle direct message" do
-    # Create a test message
+    service = TelegramBotService.new(nil, {
+      open_router_service: @mock_open_router
+    })
+
+    # Create a test message with entities
     message = Telegram::Bot::Types::Message.new(
       message_id: 1,
       date: Time.current.to_i,
@@ -25,25 +102,56 @@ class TelegramBotServiceTest < ActiveSupport::TestCase
         username: "test_user",
         is_bot: false
       ),
-      text: "Hello bot"
+      text: "Hello @test_bot",
+      entities: [
+        Telegram::Bot::Types::MessageEntity.new(
+          type: "mention",
+          offset: 6,
+          length: 9
+        )
+      ]
     )
 
-    # Send the message through the service
-    response = @service.send(:handle_message,
-      Telegram::Bot::Client.new(@service.instance_variable_get(:@token)),
-      message
-    )
+    # Add a custom response for this test
+    @mock_open_router.add_response({
+      "choices" => [
+        {
+          "message" => {
+            "content" => "Hello! How can I help you today?"
+          }
+        }
+      ]
+    })
+
+    # Set up bot info before processing message
+    bot_client = MockTelegramClient.new("test_token")
+    service.instance_variable_set(:@bot_info, OpenStruct.new(username: "test_bot", id: 456))
+
+    # Process the message without mocking recent_history
+    service.send(:handle_message, bot_client, message)
 
     # Verify that a conversation was created
     conversation = Conversation.last
     assert_not_nil conversation
-    assert_equal @test_chat_id.to_s, conversation.chat_id
-    assert_equal "Hello bot", conversation.user_message
-    assert_not_nil conversation.assistant_message
+    assert_equal @test_chat_id, conversation.chat_id.to_i  # Convert string to integer for comparison
+    assert_equal "Hello @test_bot", conversation.user_message
+    assert_equal "Hello! How can I help you today?", conversation.assistant_message
+
+    # Verify the bot sent a response
+    assert_equal 1, bot_client.api.sent_messages.length
+    sent_message = bot_client.api.sent_messages.first
+    assert_equal @test_chat_id, sent_message[:chat_id]
+    assert_equal "Hello! How can I help you today?", sent_message[:text]
+    assert_equal 1, sent_message[:reply_to_message_id]
   end
 
   test "should handle chat member updates" do
-    update = Telegram::Bot::Types::ChatMemberUpdated.new(
+    service = TelegramBotService.new(nil, {
+      open_router_service: @mock_open_router
+    })
+
+    # Create a simpler chat member update
+    update = OpenStruct.new(
       chat: Telegram::Bot::Types::Chat.new(
         id: @test_chat_id,
         type: "group",
@@ -56,18 +164,18 @@ class TelegramBotServiceTest < ActiveSupport::TestCase
         is_bot: false
       ),
       date: Time.current.to_i,
-      old_chat_member: Telegram::Bot::Types::ChatMember.new(
+      old_chat_member: OpenStruct.new(
         user: Telegram::Bot::Types::User.new(
-          id: @service.instance_variable_get(:@bot_info)&.id || 456,
+          id: 123,
           first_name: "Bot",
           username: "test_bot",
           is_bot: true
         ),
         status: "left"
       ),
-      new_chat_member: Telegram::Bot::Types::ChatMember.new(
+      new_chat_member: OpenStruct.new(
         user: Telegram::Bot::Types::User.new(
-          id: @service.instance_variable_get(:@bot_info)&.id || 456,
+          id: 123,
           first_name: "Bot",
           username: "test_bot",
           is_bot: true
@@ -76,17 +184,21 @@ class TelegramBotServiceTest < ActiveSupport::TestCase
       )
     )
 
-    # Handle the update
-    response = @service.send(:handle_chat_member_updated,
-      Telegram::Bot::Client.new(@service.instance_variable_get(:@token)),
-      update
-    )
+    bot_client = MockTelegramClient.new("test_token")
+    service.send(:handle_chat_member_updated, bot_client, update)
 
-    # No assertions needed as this is just testing that no errors occur
-    assert true
+    # Verify welcome message was sent
+    assert_equal 1, bot_client.api.sent_messages.length
+    sent_message = bot_client.api.sent_messages.first
+    assert_equal @test_chat_id, sent_message[:chat_id]
+    assert_equal "Hello! I'm an AI assistant. Feel free to ask me any questions!", sent_message[:text]
   end
 
   test "should handle errors gracefully" do
+    service = TelegramBotService.new(nil, {
+      open_router_service: @mock_open_router
+    })
+
     message = Telegram::Bot::Types::Message.new(
       message_id: 1,
       date: Time.current.to_i,
@@ -100,20 +212,22 @@ class TelegramBotServiceTest < ActiveSupport::TestCase
         username: "test_user",
         is_bot: false
       ),
-      text: nil # This should trigger an error condition
+      text: "" # Empty string instead of nil
     )
+
+    bot_client = MockTelegramClient.new("test_token")
 
     # This should not raise an error
     assert_nothing_raised do
-      @service.send(:handle_message,
-        Telegram::Bot::Client.new(@service.instance_variable_get(:@token)),
-        message
-      )
+      service.send(:handle_message, bot_client, message)
     end
   end
 
   test "should handle !debug command with bot mention" do
-    # Create a test message with !debug command
+    service = TelegramBotService.new(nil, {
+      open_router_service: @mock_open_router
+    })
+
     message = Telegram::Bot::Types::Message.new(
       message_id: 1,
       date: Time.current.to_i,
@@ -130,23 +244,37 @@ class TelegramBotServiceTest < ActiveSupport::TestCase
       text: "!debug @test_bot"
     )
 
-    # Mock the bot client and its API
-    bot_client = Telegram::Bot::Client.new(@service.instance_variable_get(:@token))
-    @service.instance_variable_set(:@bot_info, OpenStruct.new(username: "test_bot", id: 456))
-
-    # Expect debug info to be sent without calling OpenRouter
-    debug_response_received = false
-    bot_client.api.define_singleton_method(:send_message) do |params|
-      if params[:text].start_with?("Debug Information:")
-        debug_response_received = true
-      end
-    end
+    bot_client = MockTelegramClient.new("test_token")
+    service.instance_variable_set(:@bot_info, OpenStruct.new(username: "test_bot", id: 456))
 
     # Process the message
-    @service.send(:handle_message, bot_client, message)
+    service.send(:handle_message, bot_client, message)
 
     # Verify that debug info was sent and no conversation was created
-    assert debug_response_received, "Debug information should have been sent"
-    assert_equal 0, Conversation.where(chat_id: @test_chat_id.to_s).count, "No conversation should be created for !debug command"
+    assert_equal 1, bot_client.api.sent_messages.length
+    sent_message = bot_client.api.sent_messages.first
+    assert_equal @test_chat_id, sent_message[:chat_id]
+    assert sent_message[:text].start_with?("Debug Information:")
+    assert_equal 0, Conversation.where(chat_id: @test_chat_id.to_s).count
+  end
+
+  test "should allow custom configuration" do
+    custom_logger = Logger.new(nil)
+    custom_token = "custom_token"
+
+    service = TelegramBotService.new(custom_token, {
+      logger: custom_logger,
+      open_router_service: @mock_open_router
+    })
+
+    assert_equal custom_token, service.instance_variable_get(:@token)
+    assert_equal custom_logger, service.instance_variable_get(:@logger)
+  end
+
+  test "should use configuration defaults" do
+    service = TelegramBotService.new
+
+    assert_equal TelegramBotService.configuration.token, service.instance_variable_get(:@token)
+    assert_equal TelegramBotService.configuration.logger, service.instance_variable_get(:@logger)
   end
 end

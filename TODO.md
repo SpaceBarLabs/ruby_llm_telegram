@@ -1,4 +1,5 @@
 # done
+
 * rails new
 * bundle into `./.gems`
 * bundle add ruby_llm
@@ -15,12 +16,22 @@
   * implement basic message handling
   * integrate with OpenRouter client
 
+
 # now
+
+* do the call sites for TelegramBotService need to be updated after refactor
+
+
 # next
+
 * use a code block in telegram to print debug
 
+
 # soon
+
 * implement conversation history tracking
 * add error handling and logging
 * implement user management
 * add rate limiting and usage tracking
+* chat history is going to start to get too long, we need to handle that
+* can we queue log results in our tests only display on failure? - probably not needed, assertions do this
