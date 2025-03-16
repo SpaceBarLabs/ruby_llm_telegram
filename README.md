@@ -9,6 +9,7 @@ This Rails application implements a Telegram bot powered by OpenRouter for AI in
 * PostgreSQL
 * OpenRouter API key
 * Telegram Bot Token
+* Foreman (for process management)
 
 ## Project Status
 
@@ -61,9 +62,25 @@ Currently in development. Core features being implemented:
 
 ## Development
 
-Start the development server:
+The application uses Foreman to manage multiple processes (web server and Telegram bot). To start all services:
+```bash
+foreman start
+```
+
+This will start:
+- Rails server on port 5000
+- Telegram bot process
+
+For development without Foreman, you can run services individually:
+
+Start the Rails server:
 ```bash
 rails server
+```
+
+Start the Telegram bot:
+```bash
+bundle exec bin/telegram_bot
 ```
 
 ### Testing
