@@ -15,9 +15,15 @@ This Rails application implements a Telegram bot powered by RubyLLM and OpenRout
 1. Sign up for an account at [OpenRouter](https://openrouter.ai/settings/keys)
 2. Get your API key from the dashboard
 
+### Setting up Telegram Bot
+
+1. Start a chat with [@BotFather](https://t.me/botfather) on Telegram
+2. Send the `/newbot` command and follow the instructions to create a new bot
+3. BotFather will provide you with a bot token - save this for the next step
+
 ### Rails Credentials
 
-We use Rails credentials to securely store API keys. To add your OpenRouter API key:
+We use Rails credentials to securely store API keys. To add your OpenRouter API key and Telegram bot token:
 
 ```bash
 # Open credentials file (replace 'development' with your environment)
@@ -28,6 +34,7 @@ Add the following to your credentials:
 
 ```yaml
 openrouter_api_key: your_api_key_here
+telegram_bot_token: your_bot_token_here
 ```
 
 ### Testing the LLM Integration
