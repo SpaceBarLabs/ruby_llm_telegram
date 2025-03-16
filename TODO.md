@@ -17,6 +17,8 @@
 
 # now
 # next
+* use a code block in telegram to print debug
+
 # soon
 * implement conversation history tracking
 * add error handling and logging

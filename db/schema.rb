@@ -10,5 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 0) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_16_023556) do
+  create_table "conversations", force: :cascade do |t|
+    t.bigint "chat_id", null: false
+    t.string "user_id"
+    t.string "username"
+    t.text "user_message"
+    t.text "assistant_message"
+    t.json "context", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["chat_id", "created_at"], name: "index_conversations_on_chat_id_and_created_at"
+    t.index ["chat_id"], name: "index_conversations_on_chat_id"
+    t.index ["user_id"], name: "index_conversations_on_user_id"
+  end
 end

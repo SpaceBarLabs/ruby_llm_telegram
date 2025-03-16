@@ -4,7 +4,7 @@ class TelegramBotService
   def initialize(token = Rails.application.credentials.telegram_bot_token)
     @token = token
     @open_router = OpenRouterService.new
-    Rails.logger.info("TelegramBotService initialized with token: #{token[0..4]}...")
+    Rails.logger.info("TelegramBotService initialized with token: #{token.to_s[0..4]}...#{token.to_s[-4..-1]}")
   end
 
   def start
@@ -36,6 +36,33 @@ class TelegramBotService
   def handle_message(bot, message)
     return unless message.text
 
+    Rails.logger.debug "=== DEBUG: Received message from chat_id: #{message.chat.id} ==="
+    Rails.logger.debug "=== DEBUG: Message from user: #{message.from.username || message.from.first_name} (ID: #{message.from.id}) ==="
+
+    # Handle !debug command first
+    if message.text.include?("!debug")
+      debug_info = {
+        chat_id: message.chat.id,
+        chat_type: message.chat.type,
+        user_id: message.from.id,
+        username: message.from.username,
+        first_name: message.from.first_name,
+        bot_info: {
+          username: @bot_info.username,
+          id: @bot_info.id
+        },
+        message_id: message.message_id,
+        date: Time.at(message.date).utc.iso8601
+      }
+
+      bot.api.send_message(
+        chat_id: message.chat.id,
+        text: "Debug Information:\n#{JSON.pretty_generate(debug_info)}",
+        reply_to_message_id: message.message_id
+      )
+      return
+    end
+
     # Check if the message is a reply to the bot's message
     is_reply_to_bot = message.reply_to_message&.from&.id == @bot_info.id
     # Check if the message mentions the bot using @username
@@ -53,16 +80,37 @@ class TelegramBotService
     # Remove the bot mention from the message text if it exists
     user_message = message.text.gsub("@#{@bot_info.username}", "").strip
 
-    Rails.logger.info("Sending request to OpenRouter...")
-    chat_response = @open_router.chat_completion([
-      { role: "system", content: "You are a helpful assistant." },
-      { role: "user", content: user_message }
-    ])
+    # Get recent conversation history
+    conversation_history = Conversation.recent_history(message.chat.id)
+
+    # Prepare the messages array with system message and conversation history
+    messages = [
+      { role: "system", content: "You are a helpful assistant." }
+    ]
+    messages.concat(conversation_history) if conversation_history.any?
+    messages << { role: "user", content: user_message }
+
+    Rails.logger.info("Sending request to OpenRouter with conversation history...")
+    chat_response = @open_router.chat_completion(messages)
 
     if chat_response && chat_response["choices"]
       response_text = chat_response["choices"][0]["message"]["content"]
       Rails.logger.info("Received response from OpenRouter, sending reply...")
       Rails.logger.debug("OpenRouter response: #{chat_response}")
+
+      # Store the conversation
+      Conversation.create_from_interaction(
+        chat_id: message.chat.id,
+        user_id: message.from.id.to_s,
+        username: message.from.username || message.from.first_name,
+        user_message: user_message,
+        assistant_message: response_text,
+        context: {
+          timestamp: Time.current.to_i,
+          chat_type: message.chat.type,
+          message_id: message.message_id
+        }
+      )
 
       bot.api.send_message(
         chat_id: message.chat.id,
