@@ -142,6 +142,7 @@ GEM
       net-http (>= 0.5.0)
     faraday-retry (2.2.1)
       faraday (~> 2.0)
+    foreman (0.88.1)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
@@ -419,6 +420,7 @@ DEPENDENCIES
   brakeman
   capybara
   debug
+  foreman
   importmap-rails
   jbuilder
   kamal
