@@ -3,7 +3,7 @@ require "test_helper"
 class ConversationTest < ActiveSupport::TestCase
   def setup
     @valid_attributes = {
-      chat_id: "123456",
+      chat_id: 123456,
       user_id: "789",
       username: "test_user",
       user_message: "Hello bot",

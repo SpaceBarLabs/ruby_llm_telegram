@@ -1,0 +1,67 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://openrouter.ai/api/v1/chat/completions
+    body:
+      encoding: UTF-8
+      base64_string: |
+        eyJtb2RlbCI6ImFudGhyb3BpYy9jbGF1ZGUtMiIsIm1lc3NhZ2VzIjpbeyJy
+        b2xlIjoidXNlciIsImNvbnRlbnQiOiJIZWxsbyJ9XX0=
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+      Host:
+      - openrouter.ai
+      Authorization:
+      - Bearer <OPENROUTER_API_KEY>
+      Content-Type:
+      - application/json
+      Http-Referer:
+      - http://localhost:3000
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Date:
+      - Sun, 16 Mar 2025 03:53:03 GMT
+      Content-Type:
+      - application/json
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Access-Control-Allow-Origin:
+      - "*"
+      X-Clerk-Auth-Message:
+      - Invalid JWT form. A JWT consists of three parts separated by dots. (reason=token-invalid,
+        token-carrier=header)
+      X-Clerk-Auth-Reason:
+      - token-invalid
+      X-Clerk-Auth-Status:
+      - signed-out
+      Vary:
+      - Accept-Encoding
+      Server:
+      - cloudflare
+      Cf-Ray:
+      - 92114d263eb3f4ae-ORD
+    body:
+      encoding: ASCII-8BIT
+      base64_string: |
+        CiAgICAgICAgIAp7ImlkIjoiZ2VuLTE3NDIwOTcxODMtOFNvZ3h0aVM2OU11
+        bTBaTTI0VHoiLCJwcm92aWRlciI6IkFudGhyb3BpYyIsIm1vZGVsIjoiYW50
+        aHJvcGljL2NsYXVkZS0yIiwib2JqZWN0IjoiY2hhdC5jb21wbGV0aW9uIiwi
+        Y3JlYXRlZCI6MTc0MjA5NzE4MywiY2hvaWNlcyI6W3sibG9ncHJvYnMiOm51
+        bGwsImZpbmlzaF9yZWFzb24iOiJzdG9wIiwibmF0aXZlX2ZpbmlzaF9yZWFz
+        b24iOiJzdG9wIiwiaW5kZXgiOjAsIm1lc3NhZ2UiOnsicm9sZSI6ImFzc2lz
+        dGFudCIsImNvbnRlbnQiOiJIZWxsbyEiLCJyZWZ1c2FsIjpudWxsfX1dLCJ1
+        c2FnZSI6eyJwcm9tcHRfdG9rZW5zIjoxMCwiY29tcGxldGlvbl90b2tlbnMi
+        OjcsInRvdGFsX3Rva2VucyI6MTd9fQ==
+  recorded_at: Sun, 16 Mar 2025 03:53:04 GMT
+recorded_with: VCR 6.3.1

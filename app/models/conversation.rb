@@ -10,7 +10,7 @@ class Conversation < ApplicationRecord
   def self.create_from_interaction(chat_id:, user_id:, username:, user_message:, assistant_message:, context: {})
     create!(
       chat_id: chat_id,
-      user_id: user_id,
+      user_id: user_id.to_s,
       username: username,
       user_message: user_message,
       assistant_message: assistant_message,
@@ -31,6 +31,6 @@ class Conversation < ApplicationRecord
           content: conv.assistant_message
         }
       ]
-    end.flatten.reverse
+    end.reverse.flatten
   end
 end
