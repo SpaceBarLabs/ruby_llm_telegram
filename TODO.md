@@ -16,10 +16,10 @@
   * implement basic message handling
   * integrate with OpenRouter client
 
-
-# now
-
-* do the call sites for TelegramBotService need to be updated after refactor
+* standardize TelegramBotService entry points
+  * unified logging configuration
+  * consistent initialization across rake, bin, and foreman
+  * single entry point through TelegramBotService.start
 
 
 # next

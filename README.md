@@ -18,6 +18,7 @@ Currently in development. Core features being implemented:
 - [x] Dependencies configuration
 - [x] OpenRouter integration
 - [x] Telegram Bot implementation
+- [x] Standardized bot entry points
 - [ ] Conversation handling
 - [ ] User management
 
@@ -71,24 +72,26 @@ This will start:
 - Rails server on port 5000
 - Telegram bot process
 
-For development without Foreman, you can run services individually:
+### Starting the Bot
 
-Start the Rails server:
-```bash
-rails server
-```
+There are three standardized ways to start the bot, all using the same underlying initialization:
 
-Start the Telegram bot:
-```bash
-bundle exec bin/telegram_bot
-```
+1. Using Foreman (recommended for development):
+   ```bash
+   foreman start
+   ```
 
-### Testing
+2. Using Rake task (recommended for production):
+   ```bash
+   bundle exec rake telegram:start
+   ```
 
-Run the test suite:
-```bash
-rails test
-```
+3. Using the binary directly:
+   ```bash
+   bundle exec bin/telegram_bot
+   ```
+
+All methods provide identical functionality and logging configuration. Choose the one that best fits your deployment environment.
 
 ### Environment Variables
 
@@ -96,6 +99,13 @@ Create a `.env` file in the root directory with the following variables:
 ```
 RAILS_ENV=development
 DATABASE_URL=postgresql://localhost/ruby_llm_telegram_development
+```
+
+### Testing
+
+Run the test suite:
+```bash
+rails test
 ```
 
 ## Contributing

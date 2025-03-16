@@ -4,4 +4,4 @@ require File.expand_path('../config/environment', __dir__)
 Rails.application.eager_load!
 
 puts "Starting Telegram bot..."
-TelegramBotService.new.start 
+TelegramBotService.start 
