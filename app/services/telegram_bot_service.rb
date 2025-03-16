@@ -57,6 +57,8 @@ class TelegramBotService
       @bot_info = bot.api.get_me
       @logger.info("Bot username: @#{@bot_info.username}")
 
+      send_startup_message(bot)
+
       bot.listen do |message|
         case message
         when Telegram::Bot::Types::Message
@@ -75,6 +77,34 @@ class TelegramBotService
   end
 
   private
+
+  def send_startup_message(bot)
+    return unless main_channel_id
+
+    model_info = "mistralai/mistral-7b-instruct" # Default model
+    startup_text = [
+      "🤖 *Bot Started Successfully*",
+      "",
+      "*Bot Information:*",
+      "• Username: @#{@bot_info.username}",
+      "• Model: `#{model_info}`",
+      "",
+      "_Ready to assist\\!_"
+    ].join("\n")
+
+    bot.api.send_message(
+      chat_id: main_channel_id,
+      text: startup_text,
+      parse_mode: "MarkdownV2"
+    )
+    @logger.info("Sent startup message to main channel")
+  rescue StandardError => e
+    @logger.error("Failed to send startup message: #{e.message}")
+  end
+
+  def main_channel_id
+    Rails.application.credentials.telegram_main_channel_id
+  end
 
   def handle_message(bot, message)
     return unless message.text
@@ -111,11 +141,22 @@ class TelegramBotService
       date: Time.at(message.date).utc.iso8601
     }
 
+    # Format debug info in a code block using Markdown V2
+    json_text = JSON.pretty_generate(debug_info)
+    formatted_text = "Debug Information:\n```\n#{escape_markdown_v2(json_text)}\n```"
+
     bot.api.send_message(
       chat_id: message.chat.id,
-      text: "Debug Information:\n#{JSON.pretty_generate(debug_info)}",
-      reply_to_message_id: message.message_id
+      text: formatted_text,
+      reply_to_message_id: message.message_id,
+      parse_mode: "MarkdownV2"
     )
+  end
+
+  def escape_markdown_v2(text)
+    # Escape special characters for MarkdownV2 format
+    # Characters that need escaping: _ * [ ] ( ) ~ ` > # + - = | { } . !
+    text.gsub(/([_*\[\]()~`>#+=|{}.!\\])/) { |m| "\\#{m}" }
   end
 
   def should_process_message?(message)

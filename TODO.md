@@ -21,10 +21,11 @@
   * consistent initialization across rake, bin, and foreman
   * single entry point through TelegramBotService.start
 
+* use a code block in telegram to print debug
 
 # next
 
-* use a code block in telegram to print debug
+* send a startup message to the main channel on every start - list open router model and other useful information - this is implemented and failing
 
 
 # soon
