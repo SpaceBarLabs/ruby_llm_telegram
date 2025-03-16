@@ -27,7 +27,6 @@ Currently in development. Core features being implemented:
 1. Clone the repository
 2. Install dependencies:
    ```bash
-   bundle config set --local path '.gems'
    bundle install
    ```
 3. Setup the database:
@@ -93,28 +92,3 @@ DATABASE_URL=postgresql://localhost/ruby_llm_telegram_development
 ## License
 
 This project is available as open source under the terms of the MIT License.
-
-# README
-
-This README would normally document whatever steps are necessary to get the
-application up and running.
-
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
