@@ -15,6 +15,8 @@ class TelegramBotService
         case message
         when Telegram::Bot::Types::Message
           handle_message(bot, message)
+        when Telegram::Bot::Types::ChatMemberUpdated
+          handle_chat_member_updated(bot, message)
         else
           Rails.logger.info("Received unsupported message type: #{message.class}")
         end
@@ -65,5 +67,23 @@ class TelegramBotService
       chat_id: message.chat.id,
       text: "An error occurred while processing your message."
     )
+  end
+
+  def handle_chat_member_updated(bot, update)
+    Rails.logger.info("Chat member update received: #{update.inspect}")
+
+    if update.new_chat_member&.user&.id == bot.api.get_me.id
+      # Bot was added to a group
+      if update.new_chat_member.status == "member" || update.new_chat_member.status == "administrator"
+        Rails.logger.info("Bot was added to group: #{update.chat.title}")
+        bot.api.send_message(
+          chat_id: update.chat.id,
+          text: "Hello! I'm an AI assistant. Feel free to ask me any questions!"
+        )
+      end
+    end
+  rescue StandardError => e
+    Rails.logger.error("Error handling chat member update: #{e.message}")
+    Rails.logger.error("Backtrace:\n#{e.backtrace.join("\n")}")
   end
 end
