@@ -1,0 +1,19 @@
+current directory: /root/ZachBeta/ruby_llm_telegram/.gems/ruby/3.3.0/gems/debug-1.10.0/ext/debug
+/usr/local/rvm/rubies/ruby-3.3.5/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /root/ZachBeta/ruby_llm_telegram/.gems/ruby/3.3.0/gems/debug-1.10.0/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20250317-1681094-1qpkgl sitelibdir\=./.gem.20250317-1681094-1qpkgl clean
+
+current directory: /root/ZachBeta/ruby_llm_telegram/.gems/ruby/3.3.0/gems/debug-1.10.0/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20250317-1681094-1qpkgl sitelibdir\=./.gem.20250317-1681094-1qpkgl
+compiling debug.c
+compiling iseq_collector.c
+linking shared-object debug/debug.so
+
+current directory: /root/ZachBeta/ruby_llm_telegram/.gems/ruby/3.3.0/gems/debug-1.10.0/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20250317-1681094-1qpkgl sitelibdir\=./.gem.20250317-1681094-1qpkgl install
+/usr/bin/install -c -m 0755 debug.so ./.gem.20250317-1681094-1qpkgl/debug
+
+current directory: /root/ZachBeta/ruby_llm_telegram/.gems/ruby/3.3.0/gems/debug-1.10.0/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20250317-1681094-1qpkgl sitelibdir\=./.gem.20250317-1681094-1qpkgl clean

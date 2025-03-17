@@ -1,0 +1,18 @@
+current directory: /root/ZachBeta/ruby_llm_telegram/.gems/ruby/3.3.0/gems/stringio-3.1.5/ext/stringio
+/usr/local/rvm/rubies/ruby-3.3.5/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /root/ZachBeta/ruby_llm_telegram/.gems/ruby/3.3.0/gems/stringio-3.1.5/ext/stringio
+make DESTDIR\= sitearchdir\=./.gem.20250317-1681094-dv4stv sitelibdir\=./.gem.20250317-1681094-dv4stv clean
+
+current directory: /root/ZachBeta/ruby_llm_telegram/.gems/ruby/3.3.0/gems/stringio-3.1.5/ext/stringio
+make DESTDIR\= sitearchdir\=./.gem.20250317-1681094-dv4stv sitelibdir\=./.gem.20250317-1681094-dv4stv
+compiling stringio.c
+linking shared-object stringio.so
+
+current directory: /root/ZachBeta/ruby_llm_telegram/.gems/ruby/3.3.0/gems/stringio-3.1.5/ext/stringio
+make DESTDIR\= sitearchdir\=./.gem.20250317-1681094-dv4stv sitelibdir\=./.gem.20250317-1681094-dv4stv install
+/usr/bin/install -c -m 0755 stringio.so ./.gem.20250317-1681094-dv4stv
+
+current directory: /root/ZachBeta/ruby_llm_telegram/.gems/ruby/3.3.0/gems/stringio-3.1.5/ext/stringio
+make DESTDIR\= sitearchdir\=./.gem.20250317-1681094-dv4stv sitelibdir\=./.gem.20250317-1681094-dv4stv clean
